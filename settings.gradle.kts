@@ -2,5 +2,11 @@ rootProject.name = "application"
 
 include(
     "application",
-    "core"
+    "core",
+
+    ":storage:api",
+    ":storage:implementation",
+
+    ":service:api",
+    ":service:implementation"
 )
