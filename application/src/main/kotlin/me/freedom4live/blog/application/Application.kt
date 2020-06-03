@@ -1,4 +1,4 @@
-package me.freedom4live.blog
+package me.freedom4live.blog.application
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.Application
