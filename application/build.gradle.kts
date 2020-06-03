@@ -18,6 +18,12 @@ application {
 dependencies {
     compile(project(":core"))
 
+    api(project(":storage:api"))
+    compile(project(":storage:implementation"))
+
+    api(project(":service:api"))
+    compile(project(":service:implementation"))
+
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
     implementation("io.ktor:ktor-server-netty:$ktor_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
