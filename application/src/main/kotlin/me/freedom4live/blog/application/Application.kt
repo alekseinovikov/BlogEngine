@@ -1,36 +1,32 @@
 package me.freedom4live.blog
 
-import io.ktor.application.*
-import io.ktor.response.*
-import io.ktor.request.*
-import io.ktor.routing.*
-import io.ktor.http.*
-import io.ktor.sessions.*
-import io.ktor.features.*
+import com.fasterxml.jackson.databind.SerializationFeature
+import io.ktor.application.Application
+import io.ktor.application.call
+import io.ktor.application.install
 import io.ktor.auth.*
-import com.fasterxml.jackson.databind.*
-import io.ktor.jackson.*
+import io.ktor.features.ConditionalHeaders
+import io.ktor.features.ContentNegotiation
+import io.ktor.features.StatusPages
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.jackson.jackson
+import io.ktor.response.respond
+import io.ktor.response.respondText
+import io.ktor.routing.get
+import io.ktor.routing.routing
+import me.freedom4live.blog.core.error.AuthenticationException
+import me.freedom4live.blog.core.error.AuthorizationException
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
-    install(Sessions) {
-        cookie<MySession>("MY_SESSION") {
-            cookie.extensions["SameSite"] = "lax"
-        }
-    }
-
     install(ConditionalHeaders)
 
-    install(DefaultHeaders) {
-        header("X-Engine", "Ktor") // will send this header with each response
-    }
-
     install(Authentication) {
-        basic("myBasicAuth") {
-            realm = "Ktor Server"
+        form("formAuth") {
             validate { if (it.name == "test" && it.password == "password") UserIdPrincipal(it.name) else null }
         }
     }
@@ -46,12 +42,6 @@ fun Application.module(testing: Boolean = false) {
             call.respondText("HELLO WORLD!", contentType = ContentType.Text.Plain)
         }
 
-        get("/session/increment") {
-            val session = call.sessions.get<MySession>() ?: MySession()
-            call.sessions.set(session.copy(count = session.count + 1))
-            call.respondText("Counter is ${session.count}. Refresh to increment.")
-        }
-
         install(StatusPages) {
             exception<AuthenticationException> { cause ->
                 call.respond(HttpStatusCode.Unauthorized)
@@ -59,7 +49,6 @@ fun Application.module(testing: Boolean = false) {
             exception<AuthorizationException> { cause ->
                 call.respond(HttpStatusCode.Forbidden)
             }
-
         }
 
         authenticate("myBasicAuth") {
@@ -75,8 +64,4 @@ fun Application.module(testing: Boolean = false) {
     }
 }
 
-data class MySession(val count: Int = 0)
-
-class AuthenticationException : RuntimeException()
-class AuthorizationException : RuntimeException()
 
