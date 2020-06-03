@@ -1,5 +1,6 @@
 rootProject.name = "application"
 
 include(
-    "application"
+    "application",
+    "core"
 )

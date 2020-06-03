@@ -1,7 +1,7 @@
 import io.ktor.http.*
 import kotlin.test.*
 import io.ktor.server.testing.*
-import me.freedom4live.blog.module
+import me.freedom4live.blog.application.module
 
 class ApplicationTest {
     @Test
