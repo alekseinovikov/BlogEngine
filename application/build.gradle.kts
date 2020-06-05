@@ -1,6 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.Coroutines
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 val ktor_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
@@ -16,13 +13,11 @@ application {
 
 
 dependencies {
-    compile(project(":core"))
+    compile(project(":storage:storage-api"))
+    compile(project(":storage:storage-implementation"))
 
-    api(project(":storage:api"))
-    compile(project(":storage:implementation"))
-
-    api(project(":service:api"))
-    compile(project(":service:implementation"))
+    compile(project(":service:service-api"))
+    compile(project(":service:service-implementation"))
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
     implementation("io.ktor:ktor-server-netty:$ktor_version")
@@ -31,5 +26,6 @@ dependencies {
     implementation("io.ktor:ktor-server-host-common:$ktor_version")
     implementation("io.ktor:ktor-auth:$ktor_version")
     implementation("io.ktor:ktor-jackson:$ktor_version")
+
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
 }
