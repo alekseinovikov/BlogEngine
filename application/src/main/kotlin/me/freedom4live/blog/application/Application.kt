@@ -2,22 +2,21 @@ package me.freedom4live.blog.application
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.Application
-import io.ktor.application.call
 import io.ktor.application.install
-import io.ktor.auth.*
+import io.ktor.auth.Authentication
 import io.ktor.features.ConditionalHeaders
 import io.ktor.features.ContentNegotiation
-import io.ktor.features.StatusPages
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
-import io.ktor.response.respond
-import io.ktor.response.respondText
-import io.ktor.routing.get
 import io.ktor.routing.routing
+import io.ktor.sessions.SessionStorage
+import io.ktor.sessions.Sessions
+import me.freedom4live.blog.application.auth.configureFormAuth
+import me.freedom4live.blog.application.auth.configureSessionAuth
 import me.freedom4live.blog.application.config.configureContainer
-import me.freedom4live.blog.core.error.AuthenticationException
-import me.freedom4live.blog.core.error.AuthorizationException
+import me.freedom4live.blog.application.routing.authRoute
+import me.freedom4live.blog.application.routing.errorRoute
+import me.freedom4live.blog.application.session.configureAuthCookie
+import org.kodein.di.generic.instance
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -25,13 +24,16 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
     val di = configureContainer(testing)
+    val sessionStorage by di.instance<SessionStorage>()
 
     install(ConditionalHeaders)
+    install(Sessions) {
+        configureAuthCookie(sessionStorage)
+    }
 
     install(Authentication) {
-        form("formAuth") {
-            validate { if (it.name == "test" && it.password == "password") UserIdPrincipal(it.name) else null }
-        }
+        configureSessionAuth()
+        configureFormAuth()
     }
 
     install(ContentNegotiation) {
@@ -41,29 +43,8 @@ fun Application.module(testing: Boolean = false) {
     }
 
     routing {
-        get("/") {
-            call.respondText("HELLO WORLD!", contentType = ContentType.Text.Plain)
-        }
-
-        install(StatusPages) {
-            exception<AuthenticationException> { cause ->
-                call.respond(HttpStatusCode.Unauthorized)
-            }
-            exception<AuthorizationException> { cause ->
-                call.respond(HttpStatusCode.Forbidden)
-            }
-        }
-
-        authenticate("formAuth") {
-            get("/protected/route/basic") {
-                val principal = call.principal<UserIdPrincipal>()!!
-                call.respondText("Hello ${principal.name}")
-            }
-        }
-
-        get("/json/jackson") {
-            call.respond(mapOf("hello" to "world"))
-        }
+        errorRoute()
+        authRoute()
     }
 }
 
