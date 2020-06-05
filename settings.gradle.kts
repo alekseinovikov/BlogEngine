@@ -4,9 +4,9 @@ include(
     "application",
     "core",
 
-    ":storage:api",
-    ":storage:implementation",
+    ":storage:storage-api",
+    ":storage:storage-implementation",
 
-    ":service:api",
-    ":service:implementation"
+    ":service:service-api",
+    ":service:service-implementation"
 )
